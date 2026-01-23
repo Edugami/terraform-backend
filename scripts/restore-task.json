@@ -1,0 +1,25 @@
+{
+  "family": "edugami-restore-runner",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "4096",
+  "executionRoleArn": "arn:aws:iam::975363676135:role/edugami-dev-ecs-execution-role",
+  "taskRoleArn": "arn:aws:iam::975363676135:role/edugami-dev-ecs-task-role",
+  "containerDefinitions": [
+    {
+      "name": "restore",
+      "image": "postgres:16",
+      "essential": true,
+      "command": ["bash","-lc","sleep 36000"],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/edugami-restore",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "restore"
+        }
+      }
+    }
+  ]
+}
