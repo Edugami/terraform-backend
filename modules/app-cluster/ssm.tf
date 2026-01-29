@@ -13,7 +13,7 @@
 data "aws_ssm_parameters_by_path" "shared" {
   path            = "/edugami/shared/config"
   recursive       = true
-  with_decryption = false  # We only need names, ECS will decrypt via ARN
+  with_decryption = false # We only need names, ECS will decrypt via ARN
 }
 
 # ============================================================================
@@ -23,7 +23,7 @@ data "aws_ssm_parameters_by_path" "shared" {
 data "aws_ssm_parameters_by_path" "env" {
   path            = "/edugami/${var.environment}/config"
   recursive       = true
-  with_decryption = false  # We only need names, ECS will decrypt via ARN
+  with_decryption = false # We only need names, ECS will decrypt via ARN
 }
 
 # ============================================================================

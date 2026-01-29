@@ -15,7 +15,7 @@
 resource "random_password" "db" {
   length           = 32
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"  # RDS-compatible special chars
+  override_special = "!#$%&*()-_=+[]{}<>:?" # RDS-compatible special chars
 }
 
 # ============================================================================
@@ -110,9 +110,9 @@ resource "aws_db_instance" "main" {
   vpc_security_group_ids = [var.db_security_group_id]
   parameter_group_name   = aws_db_parameter_group.postgresql.name
 
-  multi_az            = var.db_multi_az
-  publicly_accessible = false
-  skip_final_snapshot = var.environment == "dev" ? true : false
+  multi_az                  = var.db_multi_az
+  publicly_accessible       = false
+  skip_final_snapshot       = var.environment == "dev" ? true : false
   final_snapshot_identifier = var.environment == "prod" ? "${local.name_prefix}-final-snapshot" : null
 
   backup_retention_period = var.environment == "prod" ? 7 : 1

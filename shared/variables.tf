@@ -113,7 +113,7 @@ variable "enable_waf" {
 variable "admin_allowed_cidrs" {
   description = "CIDR blocks allowed to access admin tools (pgAdmin, Redis Commander). Include corporate/VPN IPs."
   type        = list(string)
-  default     = []  # Must be explicitly configured - no default access
+  default     = [] # Must be explicitly configured - no default access
 }
 
 variable "enable_aws_managed_rules" {

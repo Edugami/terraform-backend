@@ -70,7 +70,7 @@ resource "aws_wafv2_web_acl" "main" {
           or_statement {
             statement {
               byte_match_statement {
-                search_string         = "pgadmin-"
+                search_string = "pgadmin-"
                 field_to_match {
                   single_header {
                     name = "host"
@@ -85,7 +85,7 @@ resource "aws_wafv2_web_acl" "main" {
             }
             statement {
               byte_match_statement {
-                search_string         = "redis-"
+                search_string = "redis-"
                 field_to_match {
                   single_header {
                     name = "host"

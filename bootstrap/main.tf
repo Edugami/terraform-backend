@@ -131,7 +131,7 @@ output "dynamodb_table_name" {
 
 output "backend_config" {
   description = "Backend configuration to use in other Terraform configs"
-  value = <<-EOT
+  value       = <<-EOT
     terraform {
       backend "s3" {
         bucket         = "${aws_s3_bucket.terraform_state.id}"
