@@ -11,11 +11,10 @@ Infraestructura como Código para desplegar Rails + Sidekiq en AWS ECS Fargate.
                    │   ALB   │  (Shared)
                    └────┬────┘
                         │
-        ┌───────────────┼───────────────┐
-        │               │               │
-   dev.edugami.pro  edugami.pro   www.edugami.pro
-        │               └───────┬───────┘
-        ▼                       ▼
+        ┌─────────────────────────┐
+        │                         │
+   dev.edugami.pro      prod.edugami.pro
+        │                       |                       ▼
    ┌─────────┐             ┌─────────┐
    │ DEV TG  │             │ PROD TG │
    └────┬────┘             └────┬────┘
