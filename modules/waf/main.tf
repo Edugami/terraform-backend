@@ -147,6 +147,25 @@ resource "aws_wafv2_web_acl" "main" {
         managed_rule_group_statement {
           name        = "AWSManagedRulesCommonRuleSet"
           vendor_name = "AWS"
+
+          # Override: Allow large request bodies for image uploads
+          # SizeRestrictions_BODY blocks requests >8KB by default
+          rule_action_override {
+            name = "SizeRestrictions_BODY"
+            action_to_use {
+              count {} # Count instead of block - allows monitoring without blocking
+            }
+          }
+
+          # Override: Allow MathML/LaTeX in educational content
+          # CrossSiteScripting_BODY blocks MathML namespaces (xmlns="http://www.w3.org/1998/Math/MathML")
+          # This is legitimate content in our EdTech platform
+          rule_action_override {
+            name = "CrossSiteScripting_BODY"
+            action_to_use {
+              count {} # Count instead of block - Rails has its own XSS protection
+            }
+          }
         }
       }
 
