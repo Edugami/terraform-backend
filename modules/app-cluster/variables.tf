@@ -313,3 +313,26 @@ variable "redis_commander_password" {
   sensitive   = true
   default     = ""
 }
+
+# ============================================================================
+# On-Demand Task Configuration
+# ============================================================================
+# Used for interactive tasks (migrations, rails console) and scheduled jobs
+
+variable "ondemand_cpu" {
+  description = "CPU units for on-demand tasks"
+  type        = number
+  default     = 1024
+}
+
+variable "ondemand_memory" {
+  description = "Memory for on-demand tasks (MB)"
+  type        = number
+  default     = 2048
+}
+
+variable "ondemand_ephemeral_storage" {
+  description = "Ephemeral storage for on-demand tasks (GiB)"
+  type        = number
+  default     = 30
+}
