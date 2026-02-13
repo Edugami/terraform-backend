@@ -43,5 +43,5 @@ variable "dev_host_headers" {
 variable "prod_host_headers" {
   description = "Host headers for PROD environment"
   type        = list(string)
-  default     = ["edugami.pro", "www.edugami.pro"]
+  default     = ["prod.edugami.pro"]
 }

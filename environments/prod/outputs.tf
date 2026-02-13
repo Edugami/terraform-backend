@@ -39,5 +39,5 @@ output "alb_dns_name" {
 
 output "app_url" {
   description = "Application URL"
-  value       = "https://www.edugami.pro"
+  value       = "https://prod.edugami.pro"
 }

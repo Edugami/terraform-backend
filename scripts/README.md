@@ -160,11 +160,13 @@ Dentro del container:
 ```bash
 export PRESIGNED_URL="https://....s3.amazonaws.com/...dump?X-Amz-..."
 
-curl -L "$PRESIGNED_URL" -o /tmp/backup.dump
-```
-
 apt update
 apt install -y curl
+
+apt install tmux
+
+curl -L "$PRESIGNED_URL" -o /tmp/backup.dump
+```
 
 ## 8. Restaurar en RDS
 
@@ -182,9 +184,7 @@ export PGPASSWORD="$DB_PASS"
 Luego intentamos restaurar
 
 ```bash
-pg_restore --verbose --clean --no-owner --no-acl --jobs 4 \
-  -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
-  /tmp/backup.dump
+pg_restore --verbose --clean --no-owner --no-acl --jobs 4 -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" /tmp/backup.dump 2>&1 | tee restore_output.log
 ```
 
 Notas:
