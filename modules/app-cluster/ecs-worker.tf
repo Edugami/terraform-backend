@@ -44,8 +44,10 @@ resource "aws_ecs_task_definition" "worker" {
       secrets = concat(local.ssm_secrets, [for k, v in var.additional_secrets : { name = k, valueFrom = v }])
 
       # Sidekiq health check via process presence
+      # Using -f flag to search full command line (not just process name)
+      # The process name is "bundle" but args contain "sidekiq"
       healthCheck = {
-        command     = ["CMD-SHELL", "pgrep -x sidekiq || exit 1"]
+        command     = ["CMD-SHELL", "pgrep -f sidekiq || exit 1"]
         interval    = 30
         timeout     = 5
         retries     = 3
