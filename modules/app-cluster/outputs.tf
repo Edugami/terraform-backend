@@ -111,3 +111,22 @@ output "task_role_arn" {
   description = "ECS task role ARN"
   value       = aws_iam_role.ecs_task.arn
 }
+
+# ============================================================================
+# On-Demand Task Outputs
+# ============================================================================
+
+output "ondemand_task_definition_arn" {
+  description = "ARN of the on-demand task definition (use for interactive tasks and scheduled jobs)"
+  value       = aws_ecs_task_definition.ondemand.arn
+}
+
+output "ondemand_task_definition_family" {
+  description = "Family name of the on-demand task definition"
+  value       = aws_ecs_task_definition.ondemand.family
+}
+
+output "ondemand_log_group_name" {
+  description = "CloudWatch log group for on-demand tasks"
+  value       = aws_cloudwatch_log_group.ondemand.name
+}

@@ -1,4 +1,219 @@
-# Migración PostgreSQL Heroku → AWS RDS (ECS Fargate)
+# Scripts de Utilidades ECS
+
+Script para levantar contenedores ECS interactivos para ejecutar migraciones, debugging, rails console, y tareas de mantenimiento.
+
+---
+
+## Tabla de Contenidos
+
+1. [Tareas On-Demand (Interactivas)](#tareas-on-demand-interactivas)
+2. [Cronjobs con EventBridge](#cronjobs-con-eventbridge)
+3. [Migración PostgreSQL Heroku → AWS RDS](#migración-postgresql-heroku--aws-rds-ecs-fargate)
+
+---
+
+## Tareas On-Demand (Interactivas)
+
+### Script Automatizado
+
+El script `run-ondemand-task.sh` levanta un contenedor Rails con `sleep infinity` y te conecta automáticamente:
+
+```bash
+./scripts/run-ondemand-task.sh dev
+```
+
+**¿Qué hace el script?**
+1. Lee configuración de Terraform (subnets, security groups, task definition)
+2. Ejecuta `aws ecs run-task` con `sleep infinity` y `--enable-execute-command`
+3. Espera a que la task esté corriendo
+4. Conecta automáticamente vía `aws ecs execute-command` a bash
+
+### Dentro del Contenedor
+
+Una vez conectado, tienes acceso completo a Rails:
+
+```bash
+# Rails console
+bundle exec rails console
+
+# Ejecutar migración
+bundle exec rake db:migrate
+
+# Rollback
+bundle exec rake db:rollback
+
+# Seeds
+bundle exec rake db:seed
+
+# Rails runner
+bundle exec rails runner "puts User.count"
+
+# Conectar a PostgreSQL directamente
+psql $DATABASE_URL
+
+# Ver secrets
+echo $DATABASE_URL
+echo $REDIS_URL
+echo $RAILS_MASTER_KEY
+
+# Salir
+exit
+```
+
+**El contenedor sigue corriendo** hasta que lo detengas manualmente o alcance el timeout (10 horas). Esto evita problemas con health checks y te da tiempo para ejecutar múltiples comandos.
+
+### Ver Logs
+
+```bash
+# Logs en tiempo real
+aws logs tail /ecs/edugami-dev/ondemand --follow
+
+# Logs recientes
+aws logs tail /ecs/edugami-dev/ondemand --since 2h
+```
+
+### Detener el Contenedor
+
+```bash
+# Listar tareas corriendo
+aws ecs list-tasks --cluster edugami-cluster --desired-status RUNNING
+
+# Detener una tarea específica
+aws ecs stop-task --cluster edugami-cluster --task <TASK_ARN>
+```
+
+### Troubleshooting
+
+#### No se puede conectar vía ECS Exec
+
+1. Verificar que la task tiene `--enable-execute-command` (el script lo hace automáticamente)
+2. Verificar permisos IAM del task role
+3. Intentar nuevamente (a veces tarda unos segundos en estar listo)
+
+#### Task se detiene sola
+
+El `sleep infinity` mantiene el contenedor corriendo. Si se detiene, verificar:
+- CloudWatch Logs para ver errores
+- Que la imagen Docker sea correcta
+- Que las variables de entorno (DATABASE_URL, etc.) estén en SSM
+
+---
+
+## Cronjobs con EventBridge
+
+Usa EventBridge Scheduler para ejecutar tareas Rails en horarios específicos. Los cronjobs reutilizan la misma task definition `ondemand` con command override.
+
+### Obtener Valores para EventBridge UI
+
+Necesitas estos valores de Terraform para configurar los schedules:
+
+```bash
+cd environments/dev  # o prod
+terraform output ondemand_task_definition_arn  # ARN de la task
+terraform output private_app_subnet_ids        # Subnets
+terraform output app_security_group_id         # Security group
+```
+
+### Crear Schedule en AWS Console
+
+#### 1. Abrir EventBridge Scheduler
+- AWS Console → EventBridge → **Schedules** → Create schedule
+
+#### 2. Schedule Pattern
+- **Name**: `edugami-dev-reports-daily`
+- **Schedule type**: Recurring schedule
+- **Cron expression**: `0 6 * * ? *` (6 AM UTC diario)
+
+**Ejemplos de cron:**
+- `0 6 * * ? *` - Diario 6 AM UTC
+- `0 * * * ? *` - Cada hora
+- `0 9 ? * MON-FRI *` - Lunes a Viernes 9 AM
+- `0 3 ? * SUN *` - Domingos 3 AM
+- `0 2 1 * ? *` - Primer día del mes 2 AM
+
+#### 3. Target (RunTask)
+- **API**: Amazon ECS
+- **ECS cluster**: `arn:aws:ecs:us-east-1:975363676135:cluster/edugami-cluster`
+- **ECS task**: Pegar el ARN de `terraform output ondemand_task_definition_arn`
+- **Launch type**: FARGATE_SPOT (ahorra 70%) o FARGATE
+
+#### 4. Compute Options
+- **Launch type**: FARGATE_SPOT (recomendado) o FARGATE
+- **Platform version**: LATEST
+
+#### 5. Network Configuration
+- **Subnets**: Pegar valores de `terraform output private_app_subnet_ids`
+- **Security groups**: Pegar valor de `terraform output app_security_group_id`
+- **Public IP**: DISABLED
+
+#### 6. Container Overrides
+- **Container name**: `ondemand`
+- **Command override**: `bin/rails,runner,ReportGenerator.generate_daily`
+  - ⚠️ **Importante**: Separar con **comas**, NO espacios
+  - Ejemplo: `bundle,exec,rake,db:seed`
+
+#### 7. Settings
+- **State**: Enabled
+- **Retry attempts**: 2
+
+### Ver Schedules
+
+```bash
+# Listar schedules
+aws scheduler list-schedules --name-prefix edugami-dev
+
+# Ver detalles
+aws scheduler get-schedule --name edugami-dev-reports-daily
+```
+
+### Ver Logs de Ejecuciones
+
+```bash
+# Los cronjobs usan el mismo log group que on-demand
+aws logs tail /ecs/edugami-dev/ondemand --follow
+aws logs tail /ecs/edugami-dev/ondemand --since 2h
+```
+
+### Ejemplos de Cronjobs
+
+| Descripción | Cron | Command Override |
+|-------------|------|------------------|
+| Reporte diario | `0 6 * * ? *` | `bin/rails,runner,ReportGenerator.generate_daily` |
+| Limpieza semanal | `0 3 ? * SUN *` | `bin/rails,runner,CleanupJob.perform` |
+| Backup mensual | `0 2 1 * ? *` | `bin/rails,runner,BackupJob.perform` |
+| Cada hora | `0 * * * ? *` | `bin/rails,runner,SyncJob.perform` |
+
+### Troubleshooting Cronjobs
+
+**Schedule no se ejecuta:**
+1. Verificar que está ENABLED en EventBridge
+2. Verificar expresión cron (usa UTC)
+3. Ver logs: `aws logs tail /ecs/edugami-dev/ondemand --since 1h`
+
+**Task falla:**
+1. Probar el comando manualmente primero:
+   ```bash
+   ./scripts/run-ondemand-task.sh dev
+   # Dentro ejecutar: bin/rails runner ReportGenerator.generate_daily
+   ```
+2. Verificar que el command override usa comas (no espacios)
+3. Verificar subnets y security groups correctos
+
+### Costos Estimados
+
+**On-Demand Task** (1 vCPU, 2 GB):
+- Uso interactivo esporádico: <$1/mes por ambiente
+- 1 hora corriendo: ~$0.06 (FARGATE)
+
+**Cronjobs** (reutiliza misma task 1 vCPU, 2 GB):
+- 10 minutos/día con FARGATE: ~$1/mes
+- 10 minutos/día con FARGATE_SPOT: ~$0.30/mes (70% ahorro)
+
+**Recomendación**: Usa FARGATE_SPOT para cronjobs (más barato y toleran interrupciones).
+
+---
+
+## Migración PostgreSQL Heroku → AWS RDS (ECS Fargate)
 
 Objetivo
 
@@ -160,11 +375,13 @@ Dentro del container:
 ```bash
 export PRESIGNED_URL="https://....s3.amazonaws.com/...dump?X-Amz-..."
 
-curl -L "$PRESIGNED_URL" -o /tmp/backup.dump
-```
-
 apt update
 apt install -y curl
+
+apt install tmux
+
+curl -L "$PRESIGNED_URL" -o /tmp/backup.dump
+```
 
 ## 8. Restaurar en RDS
 
@@ -179,12 +396,24 @@ export DB_NAME=$(echo "$DATABASE_URL" | sed -E 's|.*/([^?]+).*|\1|')
 export PGPASSWORD="$DB_PASS"
 ```
 
+PD: Si queremos borrar la BD debemos usar 
+
+```
+dropdb -h "$DB_HOST" -U "$DB_USER" "$DB_NAME"
+createdb -h "$DB_HOST" -U "$DB_USER" "$DB_NAME"
+```
+
 Luego intentamos restaurar
 
 ```bash
-pg_restore --verbose --clean --no-owner --no-acl --jobs 4 \
-  -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
-  /tmp/backup.dump
+pg_restore --verbose --clean --no-owner --no-acl --jobs 4 -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" /tmp/backup.dump 2>&1 | tee restore_output.log
+```
+
+Para ver los output
+
+
+```bash
+tail restore_output.log
 ```
 
 Notas:

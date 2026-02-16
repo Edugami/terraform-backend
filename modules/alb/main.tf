@@ -2,7 +2,7 @@
 # ALB Module - Shared Application Load Balancer with Host-Based Routing
 # ============================================================================
 # Single ALB shared between DEV and PROD
-# Routes traffic based on Host header (dev.edugami.pro vs www.edugami.pro)
+# Routes traffic based on Host header (dev.edugami.pro vs prod.edugami.pro)
 # ============================================================================
 
 # ============================================================================
@@ -157,7 +157,7 @@ resource "aws_lb_listener_rule" "dev" {
   }
 }
 
-# PROD: www.edugami.pro, edugami.pro
+# PROD: prod.edugami.pro
 resource "aws_lb_listener_rule" "prod" {
   listener_arn = aws_lb_listener.https.arn
   priority     = 200

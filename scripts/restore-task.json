@@ -2,8 +2,11 @@
   "family": "edugami-restore-runner",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
-  "cpu": "1024",
-  "memory": "4096",
+  "cpu": "2048",
+  "memory": "8192",
+  "ephemeralStorage": {
+    "sizeInGiB": 70
+  },
   "executionRoleArn": "arn:aws:iam::975363676135:role/edugami-dev-ecs-execution-role",
   "taskRoleArn": "arn:aws:iam::975363676135:role/edugami-dev-ecs-task-role",
   "containerDefinitions": [
