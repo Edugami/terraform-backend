@@ -396,10 +396,24 @@ export DB_NAME=$(echo "$DATABASE_URL" | sed -E 's|.*/([^?]+).*|\1|')
 export PGPASSWORD="$DB_PASS"
 ```
 
+PD: Si queremos borrar la BD debemos usar 
+
+```
+dropdb -h "$DB_HOST" -U "$DB_USER" "$DB_NAME"
+createdb -h "$DB_HOST" -U "$DB_USER" "$DB_NAME"
+```
+
 Luego intentamos restaurar
 
 ```bash
 pg_restore --verbose --clean --no-owner --no-acl --jobs 4 -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" /tmp/backup.dump 2>&1 | tee restore_output.log
+```
+
+Para ver los output
+
+
+```bash
+tail restore_output.log
 ```
 
 Notas:
