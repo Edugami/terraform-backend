@@ -3,7 +3,8 @@
 # ============================================================================
 # For running migrations, rails console, debugging, and long-running queries
 # Runs on FARGATE (On-Demand) for stability
-# No ECS Service - use `aws ecs run-task` to launch instances
+# Service starts with desired_count=0. Scale up to 1 to connect, back to 0 when done:
+#   aws ecs update-service --cluster edugami-cluster --service <name> --desired-count 1
 # ============================================================================
 
 # ============================================================================
@@ -73,6 +74,11 @@ resource "aws_ecs_task_definition" "ondemand" {
       # Longer stop timeout for migrations that may take time to complete
       stopTimeout = 119
 
+      # Required for ECS Exec (SSM agent needs init process)
+      linuxParameters = {
+        initProcessEnabled = true
+      }
+
       essential = true
     }
   ])
@@ -81,5 +87,35 @@ resource "aws_ecs_task_definition" "ondemand" {
     Name    = "${local.name_prefix}-ondemand"
     Service = "ondemand"
     Type    = "interactive"
+  })
+}
+
+# ============================================================================
+# ECS Service (desired_count=0 by default, scale to 1 when needed)
+# ============================================================================
+
+resource "aws_ecs_service" "ondemand" {
+  name            = "${local.name_prefix}-ondemand"
+  cluster         = var.ecs_cluster_id
+  task_definition = aws_ecs_task_definition.ondemand.arn
+  desired_count   = 0
+
+  launch_type = "FARGATE"
+
+  network_configuration {
+    subnets          = var.private_app_subnet_ids
+    security_groups  = [var.app_security_group_id]
+    assign_public_ip = false
+  }
+
+  enable_execute_command = true
+
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
+
+  tags = merge(local.common_tags, {
+    Name    = "${local.name_prefix}-ondemand"
+    Service = "ondemand"
   })
 }
