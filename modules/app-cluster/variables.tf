@@ -198,6 +198,12 @@ variable "db_multi_az" {
   default     = false
 }
 
+variable "db_publicly_accessible" {
+  description = "Make RDS publicly accessible (required for external connections like n8n)"
+  type        = bool
+  default     = false
+}
+
 # ============================================================================
 # Redis Configuration
 # ============================================================================

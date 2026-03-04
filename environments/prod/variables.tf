@@ -246,3 +246,15 @@ variable "redis_commander_password" {
   sensitive   = true
   default     = ""
 }
+
+variable "db_publicly_accessible" {
+  description = "Make RDS publicly accessible for n8n read-only access"
+  type        = bool
+  default     = true
+}
+
+variable "railway_n8n_ip_cidr" {
+  description = "Railway static outbound IP for n8n (CIDR, e.g. 1.2.3.4/32)"
+  type        = string
+  default     = "162.220.232.99/32"
+}

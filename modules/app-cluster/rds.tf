@@ -111,7 +111,7 @@ resource "aws_db_instance" "main" {
   parameter_group_name   = aws_db_parameter_group.postgresql.name
 
   multi_az                  = var.db_multi_az
-  publicly_accessible       = false
+  publicly_accessible       = var.db_publicly_accessible
   skip_final_snapshot       = var.environment == "dev" ? true : false
   final_snapshot_identifier = var.environment == "prod" ? "${local.name_prefix}-final-snapshot" : null
 
