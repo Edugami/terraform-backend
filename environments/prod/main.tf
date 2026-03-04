@@ -81,12 +81,13 @@ module "app_cluster" {
   sidekiq_timeout      = var.sidekiq_timeout
 
   # RDS
-  db_instance_class    = var.db_instance_class
-  db_allocated_storage = var.db_allocated_storage
-  db_name              = var.db_name
-  db_username          = var.db_username
-  db_password          = var.db_password
-  db_multi_az          = var.db_multi_az
+  db_instance_class      = var.db_instance_class
+  db_allocated_storage   = var.db_allocated_storage
+  db_name                = var.db_name
+  db_username            = var.db_username
+  db_password            = var.db_password
+  db_multi_az            = var.db_multi_az
+  db_publicly_accessible = var.db_publicly_accessible  
 
   # Redis
   redis_node_type       = var.redis_node_type
@@ -113,4 +114,16 @@ module "app_cluster" {
 
   # Monitoring / Alerting
   alarm_sns_topic_arn = data.terraform_remote_state.shared.outputs.alarm_sns_topic_arn
+}
+
+# Security Group rule: allow n8n on Railway to read from PROD DB
+resource "aws_security_group_rule" "n8n_readonly_access" {
+  count             = var.railway_n8n_ip_cidr != "" ? 1 : 0
+  type              = "ingress"
+  from_port         = 5432
+  to_port           = 5432
+  protocol          = "tcp"
+  cidr_blocks       = [var.railway_n8n_ip_cidr]
+  security_group_id = data.terraform_remote_state.shared.outputs.db_prod_sg_id
+  description       = "PostgreSQL read-only access from n8n on Railway"
 }

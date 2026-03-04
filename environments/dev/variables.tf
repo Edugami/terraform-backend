@@ -37,13 +37,13 @@ variable "image_tag" {
 variable "web_cpu" {
   description = "CPU units for web service"
   type        = number
-  default     = 512
+  default     = 2048
 }
 
 variable "web_memory" {
   description = "Memory for web service (MB)"
   type        = number
-  default     = 1024
+  default     = 4096
 }
 
 variable "web_desired_count" {
@@ -71,13 +71,13 @@ variable "web_max_count" {
 variable "worker_cpu" {
   description = "CPU units for worker service"
   type        = number
-  default     = 256
+  default     = 512
 }
 
 variable "worker_memory" {
   description = "Memory for worker service (MB)"
   type        = number
-  default     = 512
+  default     = 2048
 }
 
 variable "worker_desired_count" {
