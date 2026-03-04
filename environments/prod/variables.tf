@@ -37,13 +37,13 @@ variable "image_tag" {
 variable "web_cpu" {
   description = "CPU units for web service"
   type        = number
-  default     = 512
+  default     = 2048
 }
 
 variable "web_memory" {
   description = "Memory for web service (MB)"
   type        = number
-  default     = 1024
+  default     = 4096
 }
 
 variable "web_desired_count" {
@@ -77,7 +77,7 @@ variable "worker_cpu" {
 variable "worker_memory" {
   description = "Memory for worker service (MB)"
   type        = number
-  default     = 1024
+  default     = 2048
 }
 
 variable "worker_desired_count" {
@@ -257,4 +257,13 @@ variable "railway_n8n_ip_cidr" {
   description = "Railway static outbound IP for n8n (CIDR, e.g. 1.2.3.4/32)"
   type        = string
   default     = "162.220.232.99/32"
+}
+
+# ============================================================================
+# Bastion Host
+# ============================================================================
+
+variable "bastion_ssh_public_key" {
+  description = "Clave publica SSH para el bastion (formato: 'ssh-ed25519 AAAA...'). La privada va en n8n."
+  type        = string
 }

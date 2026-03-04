@@ -72,3 +72,17 @@ output "app_security_group_id" {
   value       = data.terraform_remote_state.shared.outputs.app_prod_sg_id
 }
 
+# ============================================================================
+# Bastion Host
+# ============================================================================
+
+output "bastion_public_ip" {
+  description = "Elastic IP del bastion — usar como SSH Host en n8n"
+  value       = aws_eip.bastion.public_ip
+}
+
+output "bastion_instance_id" {
+  description = "ID de la instancia EC2 del bastion"
+  value       = aws_instance.bastion.id
+}
+
