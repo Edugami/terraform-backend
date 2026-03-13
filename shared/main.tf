@@ -118,7 +118,7 @@ module "github_oidc" {
   github_org         = var.github_org
   github_repo        = var.github_repo
   ecr_repository_arn = module.ecr.repository_arn
-  ecs_cluster_arn    = module.ecs_cluster.cluster_arn
+  ecs_cluster_arns   = concat([module.ecs_cluster.cluster_arn], var.additional_ecs_cluster_arns)
 }
 
 # ============================================================================

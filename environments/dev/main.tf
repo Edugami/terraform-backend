@@ -41,6 +41,17 @@ data "terraform_remote_state" "shared" {
 }
 
 # ============================================================================
+# DEV ECS Cluster (dedicated, isolated from prod)
+# ============================================================================
+
+module "ecs_cluster" {
+  source = "../../modules/ecs-cluster"
+
+  project_name              = "${var.project_name}-${var.environment}"
+  enable_container_insights = false
+}
+
+# ============================================================================
 # DEV App Cluster
 # ============================================================================
 
@@ -57,9 +68,9 @@ module "app_cluster" {
   app_security_group_id  = data.terraform_remote_state.shared.outputs.app_dev_sg_id
   db_security_group_id   = data.terraform_remote_state.shared.outputs.db_dev_sg_id
 
-  # ECS (from shared state)
-  ecs_cluster_id     = data.terraform_remote_state.shared.outputs.ecs_cluster_id
-  ecs_cluster_name   = data.terraform_remote_state.shared.outputs.ecs_cluster_name
+  # ECS (dedicated dev cluster)
+  ecs_cluster_id     = module.ecs_cluster.cluster_id
+  ecs_cluster_name   = module.ecs_cluster.cluster_name
   target_group_arn   = data.terraform_remote_state.shared.outputs.dev_target_group_arn
   ecr_repository_url = data.terraform_remote_state.shared.outputs.ecr_repository_url
   image_tag          = var.image_tag

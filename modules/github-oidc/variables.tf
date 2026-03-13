@@ -22,7 +22,7 @@ variable "ecr_repository_arn" {
   type        = string
 }
 
-variable "ecs_cluster_arn" {
-  description = "ARN of the ECS cluster"
-  type        = string
+variable "ecs_cluster_arns" {
+  description = "List of ECS cluster ARNs that GitHub Actions can deploy to"
+  type        = list(string)
 }

@@ -120,7 +120,7 @@ resource "aws_iam_role_policy" "ecs_access" {
         Resource = "*"
         Condition = {
           ArnLike = {
-            "ecs:cluster" = var.ecs_cluster_arn
+            "ecs:cluster" = var.ecs_cluster_arns
           }
         }
       },
@@ -130,7 +130,7 @@ resource "aws_iam_role_policy" "ecs_access" {
         Action = [
           "ecs:DescribeClusters"
         ]
-        Resource = var.ecs_cluster_arn
+        Resource = var.ecs_cluster_arns
       },
       {
         Sid    = "ECSTaskDefinition"
