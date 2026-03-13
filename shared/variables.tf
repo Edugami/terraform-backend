@@ -60,6 +60,12 @@ variable "enable_alb_deletion_protection" {
 # GitHub Actions OIDC
 # ============================================================================
 
+variable "additional_ecs_cluster_arns" {
+  description = "Additional ECS cluster ARNs (e.g. edugami-dev-cluster, edugami-prod-cluster) that GitHub Actions can deploy to"
+  type        = list(string)
+  default     = []
+}
+
 variable "github_org" {
   description = "GitHub organization or username"
   type        = string
