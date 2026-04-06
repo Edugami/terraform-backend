@@ -71,13 +71,13 @@ variable "web_max_count" {
 variable "worker_cpu" {
   description = "CPU units for worker service"
   type        = number
-  default     = 512
+  default     = 1024
 }
 
 variable "worker_memory" {
   description = "Memory for worker service (MB)"
   type        = number
-  default     = 2048
+  default     = 4096
 }
 
 variable "worker_desired_count" {
