@@ -95,12 +95,12 @@ resource "aws_ecs_service" "worker" {
     base              = 0
   }
 
-  # Fallback to On-Demand if Spot unavailable
-  # Non-zero weight enables fallback when FARGATE_SPOT capacity is unavailable
+  # At least 1 On-Demand task always running for stability
+  # Additional tasks prefer FARGATE_SPOT for cost savings
   capacity_provider_strategy {
     capacity_provider = "FARGATE"
     weight            = 1
-    base              = 0
+    base              = 1
   }
 
   network_configuration {

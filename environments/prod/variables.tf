@@ -89,7 +89,7 @@ variable "worker_desired_count" {
 variable "worker_min_count" {
   description = "Minimum count for worker tasks"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "worker_max_count" {
