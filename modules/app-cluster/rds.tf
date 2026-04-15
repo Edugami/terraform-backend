@@ -115,7 +115,7 @@ resource "aws_db_instance" "main" {
   skip_final_snapshot       = var.environment == "dev" ? true : false
   final_snapshot_identifier = var.environment == "prod" ? "${local.name_prefix}-final-snapshot" : null
 
-  backup_retention_period = var.environment == "prod" ? 7 : 1
+  backup_retention_period = var.environment == "prod" ? 35 : 1
   backup_window           = "03:00-04:00"
   maintenance_window      = "sun:04:00-sun:05:00"
 

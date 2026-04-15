@@ -8,7 +8,7 @@
 
 resource "aws_cloudwatch_log_group" "web" {
   name              = "/ecs/${local.name_prefix}/web"
-  retention_in_days = var.environment == "prod" ? 30 : 7
+  retention_in_days = var.environment == "prod" ? 365 : 7
 
   tags = merge(local.common_tags, {
     Name    = "${local.name_prefix}-web-logs"
@@ -18,7 +18,7 @@ resource "aws_cloudwatch_log_group" "web" {
 
 resource "aws_cloudwatch_log_group" "worker" {
   name              = "/ecs/${local.name_prefix}/worker"
-  retention_in_days = var.environment == "prod" ? 30 : 7
+  retention_in_days = var.environment == "prod" ? 365 : 7
 
   tags = merge(local.common_tags, {
     Name    = "${local.name_prefix}-worker-logs"

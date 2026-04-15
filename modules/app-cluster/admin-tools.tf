@@ -26,14 +26,14 @@ data "aws_ssm_parameter" "redis_commander_password" {
 
 resource "aws_cloudwatch_log_group" "pgadmin" {
   name              = "/ecs/${local.name_prefix}/pgadmin"
-  retention_in_days = var.environment == "prod" ? 30 : 7
+  retention_in_days = var.environment == "prod" ? 365 : 7
 
   tags = local.common_tags
 }
 
 resource "aws_cloudwatch_log_group" "redis_commander" {
   name              = "/ecs/${local.name_prefix}/redis-commander"
-  retention_in_days = var.environment == "prod" ? 30 : 7
+  retention_in_days = var.environment == "prod" ? 365 : 7
 
   tags = local.common_tags
 }

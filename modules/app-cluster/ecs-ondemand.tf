@@ -13,7 +13,7 @@
 
 resource "aws_cloudwatch_log_group" "ondemand" {
   name              = "/ecs/${local.name_prefix}/ondemand"
-  retention_in_days = var.environment == "prod" ? 30 : 7
+  retention_in_days = var.environment == "prod" ? 365 : 7
 
   tags = merge(local.common_tags, {
     Name    = "${local.name_prefix}-ondemand"
