@@ -77,12 +77,12 @@ output "app_security_group_id" {
 # ============================================================================
 
 output "bastion_public_ip" {
-  description = "Elastic IP del bastion — usar como SSH Host en n8n"
-  value       = aws_eip.bastion.public_ip
+  description = "Elastic IP del VPN gateway — usar como SSH Host en n8n y Endpoint en WireGuard"
+  value       = module.vpn_gateway.public_ip
 }
 
 output "bastion_instance_id" {
-  description = "ID de la instancia EC2 del bastion"
-  value       = aws_instance.bastion.id
+  description = "ID de la instancia EC2 del VPN gateway"
+  value       = module.vpn_gateway.instance_id
 }
 
