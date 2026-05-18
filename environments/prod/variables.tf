@@ -267,3 +267,16 @@ variable "bastion_ssh_public_key" {
   description = "Clave publica SSH para el bastion (formato: 'ssh-ed25519 AAAA...'). La privada va en n8n."
   type        = string
 }
+
+# ============================================================================
+# WireGuard VPN Peers
+# ============================================================================
+
+variable "vpn_peers" {
+  description = "Miembros del equipo con acceso VPN. Cada peer necesita un keypair WireGuard. Ver scripts/generate-vpn-keys.sh"
+  type = map(object({
+    public_key = string
+    vpn_ip     = string
+  }))
+  default = {}
+}

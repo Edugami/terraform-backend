@@ -64,3 +64,6 @@ Thumbs.db
 *.pem
 *.key
 !*.pub
+
+# WireGuard VPN configs (contienen private keys)
+vpn-configs/
